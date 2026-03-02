@@ -1,0 +1,118 @@
+
+SYSTEM INFO (1-15)
+
+1. Get-WmiObject -Class Win32_OperatingSystem | Select Caption,Version,BuildNumber,OSArchitecture
+2. Get-WmiObject -Class Win32_ComputerSystem | Select Name,Model,Manufacturer,TotalPhysicalMemory
+3. Get-WmiObject -Class Win32_Processor | Select Name,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed
+4. Get-WmiObject -Class Win32_BIOS | Select Manufacturer,Name,SerialNumber,Version
+5. Get-WmiObject -Class Win32_BaseBoard | Select Manufacturer,Product,SerialNumber
+6. Get-WmiObject -Class Win32_ComputerSystemProduct | Select Name,UUID,IdentifyingNumber
+7. Get-WmiObject -Class Win32_SystemEnclosure | Select Manufacturer,Type
+8. Get-WmiObject -Class Win32_PhysicalMemory | Select Capacity,Speed,Manufacturer
+9. Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where IPEnabled -eq $true | Select Description,IPAddress,DNSHostName
+10. Get-WmiObject -Class Win32_TimeZone | Select Caption,DaylightName,StandardName
+11. Get-WmiObject -Class Win32_StartupCommand | Select Name,Command,Location,User
+12. Get-WmiObject -Class Win32_Environment | Where Name -like "*PATH*" | Select Name,VariableValue
+13. Get-WmiObject -Class Win32_LogicalDisk | Select DeviceID,Size,FreeSpace,DriveType
+14. Get-WmiObject -Class Win32_Volume | Select Name,Capacity,FreeSpace,DriveLetter
+15. Get-WmiObject -Class Win32_SystemProcesses | Measure-Object -Property WorkingSetSize -Sum
+
+USER & GROUP ENUM (16-35)
+16. Get-WmiObject -Class Win32_UserAccount | Where LocalAccount -eq $true | Select Name,SID,Disabled
+17. Get-WmiObject -Class Win32_UserAccount | Select Name,SID,LastLogon,PasswordChangeable
+18. Get-WmiObject -Class Win32_Group | Select Name,SID
+19. Get-WmiObject -Class Win32_GroupUser | Select GroupComponent,UserComponent | ForEach { [wmi]$_.GroupComponent; [wmi]$_.UserComponent }
+20. Get-WmiObject -Class Win32_UserAccount | Where LocalAccount -eq $false | Select Name,Domain
+21. Get-WmiObject -Namespace root\cimv2 -Class Win32_SystemUsers | Select Name,SID,Domain
+22. Get-WmiObject -Class Win32_AccountSID | Select AccountName,DomainName,SID
+23. Get-WmiObject -Class Win32_LogonSession | Select LogonId,AuthenticationPackage,LogonType
+24. Get-WmiObject -Class Win32_LoggedOnUser | Select Antecedent,Dependent
+25. Get-WmiObject -Class Win32_Process | Where ProcessName -eq "explorer" | Select ProcessId,SessionId
+26. Get-WmiObject -Class Win32_SessionProcess | Select Process,Session
+27. Get-WmiObject -Class Win32_UserProfile | Select LocalPath,LastUseTime,Loaded
+28. Get-WmiObject -Class Win32_NetworkLogonProfile | Select UserName,LastLogon,LogonHours
+29. Get-WmiObject -Class Win32_GroupDomain | Select Name,Domain
+30. Get-WmiObject -Class Win32_SystemAccount | Where { $_.SID -like "*-500" } | Select Name,SID
+31. Get-WmiObject -Class Win32_Trustee | Select TrusteeSID,AccessMask
+32. Get-WmiObject -Class Win32_LogonSession | Where StartTime -gt (Get-Date).AddDays(-1)
+33. Get-WmiObject -Class Win32_Process | Select ProcessId,Name,SessionId,ParentProcessId | Where SessionId -gt 0
+34. Get-WmiObject -Class Win32_UserAccount | Where PasswordRequired -eq $false | Select Name
+35. Get-WmiObject -Class Win32_Group | Where Name -like "*Admin*" | Select Name,SID
+
+
+SERVICE ENUM (36-50)
+36. Get-WmiObject -Class Win32_Service | Select Name,State,StartMode,PathName
+37. Get-WmiObject -Class Win32_Service | Where State -eq "Running" | Select Name,PathName
+38. Get-WmiObject -Class Win32_Service | Where StartMode -eq "Auto" | Select Name,PathName
+39. Get-WmiObject -Class Win32_Service | Select Name,PathName | Where PathName -notlike "C:\Windows\*" | Where PathName -notlike "*system32*"
+40. Get-WmiObject -Class Win32_Service | Where PathName -like "*.exe*" | Select Name,PathName,State
+41. Get-WmiObject -Class Win32_Service | Select Name,StartName,State
+42. Get-WmiObject -Class Win32_Service | Where StartName -notlike "LocalSystem" | Select Name,StartName
+43. Get-WmiObject -Class Win32_ServiceControl | Select Name,AcceptStop,AcceptPause
+44. Get-WmiObject -Class Win32_BaseService | Select Name,ProcessId,State
+45. Get-WmiObject -Class Win32_Service | Where State -eq "Stopped" | Select Name,StartMode
+46. Get-WmiObject -Class Win32_Service | Select Name,PathName,ProcessId | Where ProcessId -eq 0
+47. Get-WmiObject -Class Win32_Service | Where PathName -like "svchost*" | Select Name,ProcessId
+48. Get-WmiObject -Class Win32_Service | Select Name,PathName | Where { $_.PathName -match "\\Program Files\\" }
+49. Get-WmiObject -Class Win32_Service | Where StartMode -eq "Disabled" | Select Name,State
+50. Get-WmiObject -Class Win32_Service | Measure-Object | Select Count
+
+PROCESS & TASKS (51-65)
+51. Get-WmiObject -Class Win32_Process | Select ProcessId,Name,ExecutablePath,CommandLine
+52. Get-WmiObject -Class Win32_Process | Where { $_.ParentProcessId -eq 0 } | Select ProcessId,Name
+53. Get-WmiObject -Class Win32_Process | Select ProcessId,Name,SessionId,ThreadCount
+54. Get-WmiObject -Class Win32_Process | Where SessionId -gt 0 | Select ProcessId,Name,SessionId
+55. Get-WmiObject -Class Win32_Process | Where Name -like "*powershell*" | Select ProcessId,CommandLine
+56. Get-WmiObject -Class Win32_Process | Where Name -like "*cmd*" | Select ProcessId,CommandLine
+57. Get-WmiObject -Class Win32_Process | Where Name -like "*winlogon*" | Select ProcessId,SessionId
+58. Get-WmiObject -Class Win32_Process | Group-Object ExecutablePath | Sort Count -Desc
+59. Get-WmiObject -Class Win32_ProcessStartup | Select Process,SpawnedByProcess
+60. Get-WmiObject -Class Win32_ScheduledJob | Select JobID,Command,DaysOfWeek,DaysOfMonth
+61. Get-WmiObject -Class Win32_Process | Where CreationDate -gt (Get-Date).AddHours(-1) | Select Name,ProcessId
+62. Get-WmiObject -Class Win32_Process | Select ProcessId,Name,WorkingSetSize,PageFileUsage
+63. Get-WmiObject -Class Win32_Process | Where Priority -gt 10 | Select Name,Priority
+64. Get-WmiObject -Class Win32_Process | Where HandleCount -gt 1000 | Select Name,HandleCount
+65. Get-WmiObject -Class Win32_PerfFormattedData_PerfProc_Process | Select Name,ProcessID,PercentProcessorTime
+
+
+NETWORK & SHARES (66-80)
+66. Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where IPEnabled -eq $true
+67. Get-WmiObject -Class Win32_NetworkAdapter | Where NetEnabled -eq $true | Select Name,Speed
+68. Get-WmiObject -Class Win32_Share | Select Name,Path,Type,AccessMask
+69. Get-WmiObject -Class Win32_LogicalDisk | Where DriveType -eq 4 | Select DeviceID,VolumeName
+70. Get-WmiObject -Class Win32_MappedLogicalDisk | Select DeviceID,ProviderName
+71. Get-WmiObject -Class Win32_NetworkConnection | Select LocalName,RemoteName,ConnectionState
+72. Get-WmiObject -Class Win32_Session | Select ComputerName,UserName
+73. Get-WmiObject -Class Win32_SessionProcess | Select Process,Session
+74. Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Select Description,DHCPEnabled,DefaultIPGateway
+75. Get-WmiObject -Class Win32_IP4RouteTable | Select Destination,Mask,NextHop
+76. Get-WmiObject -Class Win32_NetworkProtocol | Select Name,ProtocolType
+77. Get-WmiObject -Class Win32_TSClientSetting | Select ClientNetworkName
+78. Get-WmiObject -Class Win32_NetworkLoginProfile | Select Caption,LastLogon
+79. Get-WmiObject -Class Win32_PerfRawData_Tcpip_NetworkInterface | Select Name,BytesTotalPerSec
+80. Get-WmiObject -Class Win32_ActiveRoute | Select Destination,Mask,NextHop
+
+
+PRIVILEGE & POLICY (81-90)
+81. Get-WmiObject -Class Win32_UserAccount | Where SID -like "*-500" | Select Name
+82. Get-WmiObject -Class Win32_GroupUser | Where { $_.PartComponent -like "*Administrators*" }
+83. Get-WmiObject -Class Win32_SecuritySettingOfTrustedAccount | Select Setting,AccountReferenced
+84. Get-WmiObject -Class Win32_LogicalShareSecuritySetting | Select Name,ControllingUserName
+85. Get-WmiObject -Class Win32_Service | Where StartName -like "NT AUTHORITY\*" | Select Name
+86. Get-WmiObject -Namespace root\cimv2\security\microsoftvolumeencryption -Class Win32_EncryptableVolume | Select DriveLetter,ProtectionStatus
+87. Get-WmiObject -Class Win32_OperatingSystem | Select RegisteredUser
+88. Get-WmiObject -Class Win32_Account | Where Status -eq "OK" | Select Name,Caption
+89. Get-WmiObject -Class Win32_SystemUsers | Where LocalAccount -eq $false
+90. Get-WmiObject -Class Win32_UserAccount | Select Name,Lockout,PasswordExpires
+
+PATCH & SOFTWARE (91-100)
+91. Get-WmiObject -Class Win32_QuickFixEngineering | Select HotFixID,InstalledOn
+92. Get-WmiObject -Class Win32_Product | Select Name,Vendor,Version
+93. Get-WmiObject -Class Win32_Product | Where Name -like "*Java*" | Select Name,Version
+94. Get-WmiObject -Class Win32_Product | Where Name -like "*Adobe*" | Select Name,Version
+95. Get-WmiObject -Class Win32_Product | Where Name -like "*Office*" | Select Name,Version
+96. Get-WmiObject -Class Win32_Hotfix | Select HotFixID,InstalledOn | Sort InstalledOn -Desc
+97. Get-WmiObject -Class Win32_InstalledStoreProgram | Select Name,Vendor,Version
+98. Get-WmiObject -Class Win32_InstalledStoreProgram | Where Store -like "*Microsoft*"
+99. Get-WmiObject -Class Win32_WindowsProductActivation | Select ProductName,LicenseStatus
+100. Get-WmiObject -Class Win32_OperatingSystem | Select ServicePackMajorVersion,HotFixID
