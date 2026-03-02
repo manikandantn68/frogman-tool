@@ -1,0 +1,222 @@
+official doc
+https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-architecture
+https://learn.microsoft.com/en-us/windows/win32/wmisdk/managed-object-format--mof-
+
+computer management 
+services and application -> wmi control -. property -> security -> root kelatha ellam namespace erukum
+-> class -> object -> 
+
+local group policy editor 
+ computer configuration -> administrative template -> windows components -> wimrm
+
+
+what kind of where locate mof file 
+powershell -> run as admin ->  ls wbem
+
+what kind of cmd we can aceess?
+ get-command -commndtype cmdlet *wmi*
+Get-Command -Name *cim* -CommandType Cmdlet
+
+exploring namespaces
+get-wmiobject -> gwmi
+get-instance -> gcim
+ gwmi -namespace "root" -class "__namespace" | select name
+gcim -namespace "root" -class "__namespace"
+
+
+exploring class
+wmi
+
+gwmi -class *bios* -list
+gwmi -namespace root\cimv2 -class *bios* -list
+gwmi -namespace root\cimv2 -class * -list
+gwmi -namespace root\cimv2 -class * -list | measure
+
+cim
+get-cimclass -classname *bios*
+get-cimclass -classname *
+get-cimclass -classname * | measure
+
+exploring methods
+get-cimclass -methodname *
+get-wmiobject * -list | where-object {$_.methods}
+get-cimclass -methodname *
+
+using class : filter information
+gwmi -class win32_process -filter "name ='explorer.exe'"
+gcim -class win32_process -filter "name ='explorer.exe'"
+
+using where object
+gwmi -class win32_process | where-object {$_.Name -eq  "explorer.exe"}
+ gcim -class win32_process | where-object {$_.Name -eq  "explorer.exe"}
+
+using query parameter 
+gwmi -query "select * from win32_process where name = 'explorer.exe'"
+gcim -query "select * from win32_process where name = 'explorer.exe'"
+
+------------------------
+Using class :remove an object
+get-wmiobject -class win32_process -filter "name = 'CalculatorApp.exe'"
+get-wmiobject -class win32_process -filter "name = 'CalculatorApp.exe'" | remove-wmiobject
+get-cimclass -methodname *create*
+get-cimclass -methodname create
+get-wmiobject -class win32_process -list | select -expandproperty methods
+invoke-wmimethod -class win32_process -Name Create -ArgumentList calc.exe
+-------------------
+
+wmic
+process where name='cmd.exe' call getowner
+
+
+registry
+gwmi  -namespace root\default -class stdregprov -list | select -expandproperty methods
+
+
+recon and information gathering
+gwmi -class win32_IP4RouteTable
+get-wmiobject -class win32_useraccount
+ get-wmiobject -class win32_group
+
+
+Commonly Queried WMI Classes 
+example 
+System Info: Get-CimInstance -ClassName Win32_OperatingSystem
+BIOS Details: Get-CimInstance -ClassName Win32_BIOS
+Process List: Get-CimInstance -ClassName Win32_Process
+
+
+
+# Event Consumers
+Get-WmiObject -Namespace root\subscription -Class __EventConsumer
+
+# Event Filters
+Get-WmiObject -Namespace root\subscription -Class __EventFilter
+
+# Filter-to-Consumer Bindings
+Get-WmiObject -Namespace root\subscription -Class __FilterToConsumerBinding
+
+A list of Classes and it was refer to cim2 check the avabile objects
+Get-Wmiobject -List or gwmi -List
+
+to get os related information
+Get-Wmiobject  -class win32_operatingsystem
+ Get-Wmiobject  -class win32_operatingsystem  | select lastBootUpTime
+
+cim get via 
+gcim or Get-CimInstance
+ Get-cimInstance  -class win32_operatingsystem  | select lastBootUpTime
+ Get-cimInstance  -class win32_operatingsystem  | select * -> get all info
+ Get-cimInstance  -class win32_operatingsystem  | Get-Member
+
+A list of Objects
+Get-WmiObject Win32_Service
+
+
+to view a access class in instance view
+Get-cimInstance .
+
+Get-WmiObject -> Uses the WMI (DCOM/RPC) protocol. (Old/Legacy)
+Get-CimInstance -> Uses the CIM (WS-Man) protocol. (Modern/Fast)
+
+
+using wmi -> wql WMI Query Language
+Get-WmiObject -Query "Select * from __Namespace" -Namespace Root | Select-Object Name
+
+finding specific  class
+Get-Wmiobject -Class *operating* -List
+Get-Wmiobject -Class *bios* -List
+
+
+# to get installed software and it version
+ gwmi win32_product |  select Name,verison
+
+# to finding installed software
+Get-WmiObject Win32_Product | Where-Object { $_.Name -like "google*" } | Select-Object Name, Version, InstallDate
+=========================
+giving more info win32 only
+=========================
+
+service state finding
+ gcim win32_service | select Name,state
+
+
+Class (The Idea)
+   │
+   └── Instance (The "Living" example of that idea on your PC)
+         │
+         └── Object (The "Instance" when it is handled by a user or script)
+
+ROOT (The Top Level)
+└── Namespaces (Containers/Folders)
+    ├── Root\CIMV2 (Most common: Hardware & OS)
+    │   ├── Classes (Blueprints/Templates)
+    │   │   ├── Win32_Process
+    │   │   │   ├── Instance 1: chrome.exe (PID: 1234)
+    │   │   │   ├── Instance 2: powershell.exe (PID: 5678)
+    │   │   │   └── Instance 3: svchost.exe (PID: 910)
+    │   │   ├── Win32_Service
+    │   │   │   ├── Instance: WinDefend (Running)
+    │   │   │   └── Instance: Spooler (Stopped)
+    │   │   └── Win32_LogicalDisk
+    │   │       ├── Instance: C: (NTFS, 500GB)
+    │   │       └── Instance: D: (FAT32, 16GB)
+    │   └── ... (thousands of other classes)
+    │
+    ├── Root\Default (Registry & system events)
+    ├── Root\SecurityCenter2 (Antivirus & Firewall status)
+    └── Root\WMI (Low-level hardware driver data)
+
+
+
+
+# to get antivirus product
+Get-wmiobject -Namespace root\Securitycenter2 -List
+Get-wmiobject -Namespace root\Securitycenter2 -class "*antivirus*" -list
+Get-wmiobject -Namespace root\Securitycenter2 -class AntivirusProduct | select displayName
+Get-wmiobject -Namespace root\Securitycenter2 -class AntivirusProduct | select *
+
+#to get bios related info
+Get-wmiobject -Namespace root\cimv2  win32_bios
+Get-CimInstance -ClassName win32_OperatingSystem Select-object LastBoot*
+Get-Wmiobject -Class win32_Operatingsystem | Select-object LastBoot*
+
+#To get member of class
+Get-CimInstance win32_networkadapterconfiguration | get-member
+============================================================================================
+# firewall rule
+Get-Netfirewallrule -Name "Winrm*"
+Get-Netfirewallrule -Name "Winrm*" | select name
+
+
+#check provider
+get-psprovider "but enkitah ilah"
+
+winrm -. windows remote management
+
+#how to config winrm
+Get-NetConnectionProfile
+Set-NetConnectionProfile -InterfaceIndex 14 -NetworkCategory Private
+winrm quickconfig
+ test-netconnection -computer localhost -port 5985
+
+winrm -?
+winrm enumerate -?
+winrm enumerate winrm/config/Listener
+test-wsman
+
+ws man -> web services management protocol  -> wmi ->cim 
+Protocol	 HTTP / HTTPS
+Port Usage	Static (5985/5986)
+
+pswa -> windows powershell web acess 
+web based powershell console to manage remote computer
+restrict ->by computer group / user group/ set of config /commands
+
+rdp -> remote desktop protocol
+ssh -> secure shell on Linux 
+
+wmic process call create "taskmgr.exe"
+
+attack surface reduce off 
+Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList "C:\Windows\System32\calc.exe"
+Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList "cmd.exe /c echo test > C:\test.txt"
