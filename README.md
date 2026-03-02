@@ -10,7 +10,7 @@
    [ FROGMAN IS WATCHING YOU ]
 ```
 
-# 🐸 WMI Frogman Cyber Tool v18
+# 🐸 WMI Frogman Cyber Tool v1
 
 > **The ultimate Windows WMI-based security audit and threat detection framework.**  
 > 600+ commands | 200+ MITRE ATT&CK TTPs | Remote WMI | Live Dashboard | Multi-format Export
